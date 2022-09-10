@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+
+
 import 'package:english_words/english_words.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
@@ -85,33 +87,60 @@ class RandomWordsState extends State<RandomWords> {
 
   void _pushSaved() {
     Navigator.of(context).push(
-       MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          final Iterable<ListTile> tiles = _saved.map(
-                (WordPair pair) {
-              return  ListTile(
-                title:  Text(
-                  pair.asPascalCase,
-                  style: _biggerFont,
-                ),
-              );
-            },
-          );
-          final List<Widget> divided = ListTile
-              .divideTiles(
-            context: context,
-            tiles: tiles,
-          )
-              .toList();
-          return  Scaffold(
-            appBar:  AppBar(
-              title: const Text('Saved Suggestions'),
-            ),
-            body: ListView(children: divided),
-          );
-
-        },
-      ),
+      _createRoute()
     );
+  }
+
+  Route _createRoute(){
+    return PageRouteBuilder(
+        pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => FavorTitleScreen(saved: _saved),
+        //製造動畫的
+        transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+
+          //由右至左
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.ease;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        }
+
+    );
+  }
+}
+
+class FavorTitleScreen extends StatelessWidget{
+  final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
+  final Set<WordPair> saved;
+
+  const FavorTitleScreen({required this.saved});
+
+
+  @override
+  Widget build(BuildContext context) {
+
+     Iterable<ListTile> tiles = saved.map(
+           (WordPair pair) {
+         return  ListTile(
+           title:  Text(
+             pair.asPascalCase,
+             style: _biggerFont,
+           ),
+         );
+       },
+     );
+
+     final List<Widget> divided = ListTile
+         .divideTiles(context: context, tiles: tiles).toList();
+
+     return  Scaffold(
+       appBar:  AppBar(title: const Text('Saved Suggestions')),
+       body: ListView(children: divided)
+     );
   }
 }
